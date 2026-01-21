@@ -85,12 +85,12 @@ class TestFireDetector(unittest.TestCase):
         Expectation: Returns False.
         """
         # Construct the absolute path to the image
-        image_path = os.path.join(self.images_dir, "forest.jpg")
+        image_path = os.path.join(self.images_dir, "forest.png")
 
         # Debug: Print path if test fails
         if not os.path.exists(image_path):
             print(f"DEBUG: Looking for image at: {image_path}")
-            self.fail(f"Test image not found! Please place 'forest.jpg' in {self.images_dir}")
+            self.fail(f"Test image not found! Please place 'forest.png' in {self.images_dir}")
 
         # Load image
         frame = cv2.imread(image_path)
@@ -108,11 +108,11 @@ class TestFireDetector(unittest.TestCase):
         Integration Test: Check against a real image of a burning forest (FIRE).
         Expectation: Returns True.
         """
-        image_path = os.path.join(self.images_dir, "fire.jpg")
+        image_path = os.path.join(self.images_dir, "fire.png")
 
         if not os.path.exists(image_path):
             print(f"DEBUG: Looking for image at: {image_path}")
-            self.fail(f"Test image not found! Please place 'fire.jpg' in {self.images_dir}")
+            self.fail(f"Test image not found! Please place 'fire.png' in {self.images_dir}")
 
         frame = cv2.imread(image_path)
         if frame is None:
