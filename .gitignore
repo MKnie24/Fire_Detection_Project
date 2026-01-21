@@ -1,0 +1,19 @@
+# Python Bytecode (muss nicht gespeichert werden)
+__pycache__/
+*.py[cod]
+
+# PyCharm Einstellungen (sind für jeden PC anders)
+.idea/
+
+# Virtuelle Umgebung (Bibliotheken)
+.venv/
+venv/
+env/
+
+# Projektdaten (Videos und Logs sollen nicht ins Git)
+resources/videos/
+resources/logs/
+resources/images/
+
+# MacOS Müll (falls jemand Macs nutzt)
+.DS_Store

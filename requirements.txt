@@ -1,0 +1,12 @@
+# Picturework
+opencv-python
+numpy
+
+# Communitcation with Raspberry Pi
+requests
+
+# Video-Download from YouTube
+yt-dlp
+
+# Test-Framework for TDD
+pytest
