@@ -1,82 +1,99 @@
 import cv2
 import yt_dlp
+import os
 
 
 class VideoInput:
-    """
-    Handles video acquisition from various sources:
-    1. Local Video Files
-    2. Live Webcams
-    3. YouTube URLs (via yt-dlp)
-    """
+    def __init__(self, source: str, target_width=None):
+        if not isinstance(source, str):
+            raise ValueError("VideoInput source must be a string (filepath or URL).")
 
-    def __init__(self, source=0):
-        """
-        Initialize the video input.
-
-        Args:
-            source: 
-                - int: Camera index (e.g., 0 for default webcam).
-                - str: File path to a video file OR a YouTube URL.
-        """
         self.source = source
+        self.target_width = target_width
         self.cap = None
-        self.is_youtube = False
-
-        # Check if source is a YouTube URL
-        if isinstance(self.source, str):
-            if "youtube.com" in self.source or "youtu.be" in self.source:
-                self.is_youtube = True
+        self.is_url = "http" in source or "www." in source
 
     def start(self) -> bool:
-        """
-        Opens the video source.
+        video_path = self.source
 
-        Returns:
-            bool: True if source opened successfully, False otherwise.
-        """
-        input_source = self.source
-
-        # Handle YouTube URLs using yt-dlp to get the direct stream URL
-        if self.is_youtube:
-            try:
-                ydl_opts = {
-                    'format': 'best[ext=mp4]/best',  # Get best quality mp4
-                    'quiet': True
-                }
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(self.source, download=False)
-                    input_source = info['url']  # The actual stream URL for OpenCV
-            except Exception as e:
-                print(f"Error extracting YouTube stream: {e}")
+        if self.is_url:
+            print(f"URL accepted")
+            video_path = self._download_video_smart(self.source)
+            if not video_path:
                 return False
+            print(f"Try opening: {video_path}")
 
-        # Initialize OpenCV VideoCapture
-        self.cap = cv2.VideoCapture(input_source)
+        video_path = os.path.abspath(video_path)
+
+        if not os.path.exists(video_path):
+            print(f"ERROR: Doesnt exist: {video_path}")
+            return False
+
+        self.cap = cv2.VideoCapture(video_path)
 
         if not self.cap.isOpened():
-            print(f"Error: Could not open video source {self.source}")
+            print(f"FEHLER: OpenCV could not load data: {video_path}")
             return False
 
         return True
 
-    def get_frame(self):
-        """
-        Reads the next frame from the video source.
+    def _download_video_smart(self, url):
+        filename = "temp_video.mp4"
+        info_file = "temp_video_url.txt"
 
-        Returns:
-            tuple: (ret, frame)
-                - ret (bool): True if frame is valid, False otherwise (end of video/error).
-                - frame (numpy.ndarray): The image data.
-        """
+        if os.path.exists(filename) and os.path.exists(info_file):
+            with open(info_file, "r") as f:
+                last_url = f.read().strip()
+            if last_url == url:
+                print("-> Video already downloaded.")
+                return filename
+            else:
+                try:
+                    os.remove(filename)
+                except:
+                    pass
+
+        print("-> starting download...")
+        ydl_opts = {
+            'format': 'best[ext=mp4]/best',
+            'outtmpl': filename,
+            'quiet': False,
+            'overwrites': True,
+            'ignoreerrors': True,
+            'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
+        }
+
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([url])
+
+            if os.path.exists(filename) and os.path.getsize(filename) > 0:
+                with open(info_file, "w") as f:
+                    f.write(url)
+                return filename
+            else:
+                print("ERROR: Download is empty.")
+                return None
+        except Exception as e:
+            print(f"Download Exception: {e}")
+            return None
+
+    def get_frame(self):
         if self.cap and self.cap.isOpened():
             ret, frame = self.cap.read()
-            return ret, frame
+            if not ret:
+                return False, None
+
+            if self.target_width:
+                h, w = frame.shape[:2]
+                aspect_ratio = self.target_width / w
+                new_h = int(h * aspect_ratio)
+                frame = cv2.resize(frame, (self.target_width, new_h))
+
+            return True, frame
+
         return False, None
 
     def release(self):
-        """
-        Releases the video resource.
-        """
         if self.cap:
             self.cap.release()

@@ -7,63 +7,39 @@ from src.video_input import VideoInput
 class TestVideoInput(unittest.TestCase):
 
     def setUp(self):
-        # Dynamic path to resources/videos
         test_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(test_dir)
-        self.video_path = os.path.join(project_root, "resources", "videos", "test_video.mp4")
-
-        # Check if test video exists, otherwise skip relevant tests
+        self.video_path = os.path.join(project_root, "resources", "videos", "fire_video.mp4")
         self.video_exists = os.path.exists(self.video_path)
 
-    def test_init_webcam(self):
-        """
-        Test if VideoInput initializes correctly with webcam index (int).
-        """
-        vi = VideoInput(source=0)
-        self.assertEqual(vi.source, 0, "Source should be stored as integer 0")
+    def test_init_raises_error_on_int(self):
+        with self.assertRaises(ValueError):
+            VideoInput(source=0)
 
     def test_init_file(self):
-        """
-        Test if VideoInput initializes correctly with a file path (str).
-        """
         vi = VideoInput(source="some/path.mp4")
-        self.assertEqual(vi.source, "some/path.mp4", "Source should be stored as string")
+        self.assertEqual(vi.source, "some/path.mp4")
+        self.assertFalse(vi.is_url, "Local Path must not be URL")
 
-    def test_read_frame_from_file(self):
-        """
-        Integration Test: Open a real video file and read the first frame.
-        """
-        if not self.video_exists:
-            print(f"DEBUG: Missing {self.video_path}")
-            self.skipTest("test_video.mp4 not found in resources/videos")
-
-        # Initialize with local file
-        video_input = VideoInput(source=self.video_path)
-
-        # Open source
-        success = video_input.start()
-        self.assertTrue(success, "Failed to open video file")
-
-        # Read one frame
-        ret, frame = video_input.get_frame()
-
-        # Verify result
-        self.assertTrue(ret, "Return value should be True for a valid frame")
-        self.assertIsNotNone(frame, "Frame should not be None")
-        self.assertIsInstance(frame, np.ndarray, "Frame should be a numpy array")
-        self.assertGreater(frame.size, 0, "Frame should contain data")
-
-        # Cleanup
-        video_input.release()
-
-    def test_youtube_url_detection(self):
-        """
-        Test if the system correctly identifies a YouTube URL.
-        Logic: If string starts with 'http' and contains 'youtu', treat as stream.
-        """
+    def test_url_detection(self):
         url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         vi = VideoInput(source=url)
-        self.assertTrue(vi.is_youtube, "Should identify YouTube URL correctly")
+        self.assertTrue(vi.is_url, "Link must be URL")
 
         local = VideoInput(source="my_video.mp4")
-        self.assertFalse(local.is_youtube, "Should not identify local file as YouTube")
+        self.assertFalse(local.is_url, "Not a URL")
+
+    def test_resizing(self):
+        if not self.video_exists:
+            self.skipTest("fire_video.mp4 not found")
+
+        target_w = 100
+        vi = VideoInput(source=self.video_path, target_width=target_w)
+
+        vi.start()
+
+        ret, frame = vi.get_frame()
+        vi.release()
+
+        self.assertTrue(ret, "Frame not readable")
+        self.assertEqual(frame.shape[1], target_w, f"Frame width should be {target_w}")
