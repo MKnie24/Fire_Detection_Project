@@ -7,9 +7,9 @@ from datetime import datetime
 class FireDetector:
     def __init__(self):
 
-        self.min_area = 100  # area detection
-        self.alarm_delay = 20  # sensitivity
-        self.max_wandering_distance = 40  # movement tolerance
+        self.min_area = 80  # area detection
+        self.alarm_delay = 25  # sensitivity
+        self.max_wandering_distance = 50  # movement tolerance
         self.static_threshold = 0.05  # variance
 
         self.streak = 0

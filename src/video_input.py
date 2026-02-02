@@ -18,7 +18,7 @@ class VideoInput:
 
         if self.is_url:
             print(f"URL accepted")
-            video_path = self._download_video_smart(self.source)
+            video_path = self.download_video(self.source)
             if not video_path:
                 return False
             print(f"Try opening: {video_path}")
