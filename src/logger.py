@@ -27,7 +27,6 @@ class EventLogger:
                 writer = csv.writer(f)
 
                 raw_ts = event_data.get('timestamp', '')
-                # Schönere Formatierung: T entfernen, Sekunden abschneiden
                 clean_ts = raw_ts.replace('T', ' ').split('.')[0]
 
                 box = event_data.get('box', (0, 0, 0, 0))
