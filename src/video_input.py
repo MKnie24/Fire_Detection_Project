@@ -37,7 +37,7 @@ class VideoInput:
 
         return True
 
-    def _download_video_smart(self, url):
+    def download_video(self, url):
         filename = "temp_video.mp4"
         info_file = "temp_video_url.txt"
 
