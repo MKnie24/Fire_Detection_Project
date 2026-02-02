@@ -16,7 +16,7 @@ class TestEventLogger(unittest.TestCase):
 
     def test_file_creation_and_logging(self):
         event_data = {
-            "timestamp": "2026-05-20T12:00:00",
+            "timestamp": "2026-01-20T12:00:00",
             "box": (10, 20, 100, 200)
         }
 
@@ -27,7 +27,7 @@ class TestEventLogger(unittest.TestCase):
         with open(self.test_file, 'r') as f:
             content = f.read()
             self.assertIn("FIRE DETECTED", content)
-            self.assertIn("2026-05-20 12:00:00", content)
+            self.assertIn("2026-01-20 12:00:00", content)
             self.assertIn("X: 10, Y: 20", content)
 
     def test_avoid_duplicate_logging(self):

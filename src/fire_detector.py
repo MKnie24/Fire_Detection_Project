@@ -8,9 +8,9 @@ class FireDetector:
     def __init__(self):
 
         self.min_area = 100  # area detection
-        self.alarm_delay = 15  # sensitivity
+        self.alarm_delay = 20  # sensitivity
         self.max_wandering_distance = 40  # movement tolerance
-        self.static_threshold = 0.05  # 5% variance
+        self.static_threshold = 0.05  # variance
 
         self.streak = 0
         self.start_pos = None
